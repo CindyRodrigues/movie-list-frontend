@@ -16,6 +16,11 @@ export const addMovieAsync = createAsyncThunk("movies/addMovie", async (newMovie
     return response.data
 })
 
+export const updateMovieAsync = createAsyncThunk("movies/updateMovie", async ({ movieId, updatedMovie }) => {
+    const response = await axios.put(`https://movie-list-backend-ashen.vercel.app/movies/${movieId}`, updatedMovie)
+    return response.data
+})
+
 export const moviesSlice = createSlice({
     name: "movies",
     initialState: {
@@ -55,6 +60,18 @@ export const moviesSlice = createSlice({
             state.movies.push(action.payload)
         })
         builder.addCase(addMovieAsync.rejected, (state, action) => {
+            state.status = "error"
+            state.error = action.error.message
+        })
+        builder.addCase(updateMovieAsync.pending, (state) => {
+            state.status = "loading"
+        })
+        builder.addCase(updateMovieAsync.fulfilled, (state, action) => {
+            state.status = "success"
+            const index = state.movies.findIndex((movie) => movie._id === action.payload._id)
+            state.movies[index] = action.payload
+        })
+        builder.addCase(updateMovieAsync.rejected, (state, action) => {
             state.status = "error"
             state.error = action.error.message
         })
